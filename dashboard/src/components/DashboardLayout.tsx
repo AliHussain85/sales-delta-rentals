@@ -3,6 +3,7 @@ import { LayoutDashboard, LogOut, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { dashboardPages } from '../config/navigation'
 import { useAuth } from '../context/AuthContext'
+import { Logo } from './Logo'
 
 function navClass({ isActive }: { isActive: boolean }) {
   return [
@@ -27,9 +28,7 @@ export function DashboardLayout() {
     <div className="flex h-full flex-col">
       <div className="border-b border-border px-5 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/15 ring-1 ring-gold/30">
-            <span className="text-sm font-bold text-gold-dark">DR</span>
-          </div>
+          <Logo size="sm" />
           <div>
             <p className="text-sm font-semibold text-neutral-900">Delta Rentals</p>
             <p className="text-xs text-neutral-500">Sales Dashboard</p>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Loader2, LockKeyhole } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { Logo } from '../components/Logo'
 
 export function LoginPage() {
   const { session, loading, signIn } = useAuth()
@@ -32,9 +33,7 @@ export function LoginPage() {
 
       <div className="relative w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/15 ring-1 ring-gold/30">
-            <span className="text-lg font-bold text-gold-dark">DR</span>
-          </div>
+          <Logo size="lg" className="mx-auto mb-4" />
           <h1 className="text-2xl font-semibold text-neutral-900">Delta Rentals</h1>
           <p className="mt-2 text-sm text-neutral-500">Sign in to access the sales dashboard</p>
         </div>
