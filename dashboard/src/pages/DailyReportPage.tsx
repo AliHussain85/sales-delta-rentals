@@ -3,7 +3,7 @@ import flatpickr from 'flatpickr'
 import html2canvas from 'html2canvas'
 import { Download, Filter, Image as ImageIcon, Loader2 } from 'lucide-react'
 import 'flatpickr/dist/flatpickr.min.css'
-import { supabase } from '../lib/supabase'
+import { supabaseData } from '../lib/supabase'
 import { getCountryFromPhone } from '../lib/countryPrefixes'
 import {
   formatDateHeader,
@@ -99,7 +99,7 @@ export function DailyReportPage() {
     setLoading(true)
     setError(null)
 
-    const { data, error: fetchError } = await supabase
+    const { data, error: fetchError } = await supabaseData
       .from('wati_contacts')
       .select('*')
       .order('created_at', { ascending: true })

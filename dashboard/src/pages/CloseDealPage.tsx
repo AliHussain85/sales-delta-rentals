@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { supabaseData } from '../lib/supabase'
 import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
 import {
   WEBHOOK_DEAL_CLOSED,
@@ -74,7 +74,7 @@ export function CloseDealPage() {
     setLoading(true)
     setLoadError(null)
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseData
       .from('whatsapp_clicks')
       .select('id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region')
       .order('inquiry_time', { ascending: false })
