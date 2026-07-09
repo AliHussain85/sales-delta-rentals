@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { supabaseData } from '../lib/supabase'
-import { formatDubaiDate, formatLeadLocalDateTime } from '../lib/dubai'
+import { formatDubaiDate, formatLeadLocalDateTime, parseUaeStoredTimestamp } from '../lib/dubai'
 import {
   WEBHOOK_DEAL_CLOSED,
   type DealClosedPayload,
@@ -98,7 +98,8 @@ export function CloseDealPage() {
     return leads
       .filter((lead) => {
         if (!lead.inquiry_time) return false
-        const inquiryDate = new Date(lead.inquiry_time)
+        const inquiryDate = parseUaeStoredTimestamp(lead.inquiry_time)
+        if (Number.isNaN(inquiryDate.getTime())) return false
         if (activeFilter === 'today') {
           return formatDubaiDate(inquiryDate) === formatDubaiDate(now)
         }
@@ -110,7 +111,11 @@ export function CloseDealPage() {
         }
         return true
       })
-      .sort((a, b) => new Date(b.inquiry_time).getTime() - new Date(a.inquiry_time).getTime())
+      .sort(
+        (a, b) =>
+          parseUaeStoredTimestamp(b.inquiry_time).getTime() -
+          parseUaeStoredTimestamp(a.inquiry_time).getTime(),
+      )
   }, [leads, activeFilter, selectedDate])
 
   useEffect(() => {
