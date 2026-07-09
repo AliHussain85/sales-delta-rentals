@@ -40,9 +40,9 @@ export function formatDubaiDateTime(timestamp: string): string {
 }
 
 /**
- * Supabase stores UAE wall-clock time with a wrong +00 offset, e.g.
- * `2026-07-07 09:52:38.142431+00` means 09:52 in UAE, not UTC.
- * Re-interpret as +04:00 so we can convert to the browser timezone.
+ * Supabase stores UAE wall-clock time in 24-hour form with a wrong +00 offset.
+ * Example: `2026-07-07 13:27:09.145396+00` means 13:27 in UAE (1:27 PM), not UTC.
+ * Re-interpret as +04:00, then the browser converts to the viewer's timezone.
  */
 export function parseUaeStoredTimestamp(timestamp: string): Date {
   const withoutOffset = timestamp.trim().replace(/(\.\d+)?(Z|[+-]\d{2}(?::?\d{2})?)$/, '')
@@ -50,19 +50,18 @@ export function parseUaeStoredTimestamp(timestamp: string): Date {
   return new Date(`${normalized}+04:00`)
 }
 
-/** UAE-stored timestamp → viewer's local date/time (12-hour). */
+/** UAE-stored 24h timestamp → viewer's local date + 12-hour time. */
 export function formatLeadLocalDateTime(timestamp: string): string {
   const date = parseUaeStoredTimestamp(timestamp)
   if (Number.isNaN(date.getTime())) return timestamp
 
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
+  const datePart = date.toLocaleDateString('en-CA')
+  const timePart = date.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   })
+  return `${datePart} ${timePart}`
 }
 
 export function formatDateHeader(fromStr: string, toStr: string): string {
