@@ -28,8 +28,15 @@ export function formatDubaiDate(date: Date): string {
 }
 
 export function formatDubaiDateTime(timestamp: string): string {
-  const parts = dubaiParts(new Date(timestamp))
-  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`
+  const date = new Date(timestamp)
+  const datePart = date.toLocaleDateString('en-CA', { timeZone: DUBAI_TZ })
+  const timePart = date.toLocaleTimeString('en-US', {
+    timeZone: DUBAI_TZ,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+  return `${datePart} ${timePart}`
 }
 
 export function formatDateHeader(fromStr: string, toStr: string): string {

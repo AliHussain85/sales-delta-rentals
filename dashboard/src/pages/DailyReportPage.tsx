@@ -27,6 +27,17 @@ function stageBadgeClass(stage?: string): string {
   return map[key] ?? 'bg-neutral-100 text-neutral-600'
 }
 
+function filterLeadsByRange(allLeads: WatiContact[], from: string, to: string) {
+  return allLeads.filter((lead) => {
+    const bookings = parseBookings(lead.bookings)
+    return bookings.some((booking) => {
+      const datePart = getInquiryDatePart(booking.inquiry_start_date)
+      if (!datePart) return false
+      return datePart >= from && datePart <= to
+    })
+  })
+}
+
 function BookingCard({ booking }: { booking: Booking }) {
   return (
     <div className="mb-2 grid gap-3 rounded-xl border border-neutral-200 bg-white p-4 last:mb-0 sm:grid-cols-2 lg:grid-cols-4">
@@ -79,23 +90,39 @@ function Field({
 }
 
 export function DailyReportPage() {
-  const today = getDubaiToday()
   const reportRef = useRef<HTMLDivElement>(null)
   const fromRef = useRef<HTMLInputElement>(null)
   const toRef = useRef<HTMLInputElement>(null)
   const fpFromRef = useRef<flatpickr.Instance | null>(null)
   const fpToRef = useRef<flatpickr.Instance | null>(null)
 
-  const [dateFrom, setDateFrom] = useState(today)
-  const [dateTo, setDateTo] = useState(today)
-  const [reportTitle, setReportTitle] = useState(formatDateHeader(today, today))
+  const [dateFrom, setDateFrom] = useState(() => getDubaiToday())
+  const [dateTo, setDateTo] = useState(() => getDubaiToday())
+  const [reportTitle, setReportTitle] = useState(() =>
+    formatDateHeader(getDubaiToday(), getDubaiToday()),
+  )
+  const [allLeads, setAllLeads] = useState<WatiContact[]>([])
   const [leads, setLeads] = useState<WatiContact[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [openBookings, setOpenBookings] = useState<Set<string>>(new Set())
   const [capturing, setCapturing] = useState(false)
 
-  const fetchLeads = useCallback(async (from: string, to: string) => {
+  const applyRange = useCallback((from: string, to: string, source: WatiContact[]) => {
+    setDateFrom(from)
+    setDateTo(to)
+    setReportTitle(formatDateHeader(from, to))
+    setOpenBookings(new Set())
+    setLeads(filterLeadsByRange(source, from, to))
+  }, [])
+
+  const getPickerRange = useCallback(() => {
+    const from = fpFromRef.current?.input.value || fromRef.current?.value || dateFrom
+    const to = fpToRef.current?.input.value || toRef.current?.value || dateTo
+    return { from, to }
+  }, [dateFrom, dateTo])
+
+  const loadAllLeads = useCallback(async (from: string, to: string) => {
     setLoading(true)
     setError(null)
 
@@ -105,31 +132,27 @@ export function DailyReportPage() {
       .order('created_at', { ascending: true })
 
     if (fetchError) {
+      setAllLeads([])
       setLeads([])
       setError(fetchError.message)
       setLoading(false)
       return
     }
 
-    const filtered = (data as WatiContact[]).filter((lead) => {
-      const bookings = parseBookings(lead.bookings)
-      return bookings.some((booking) => {
-        const datePart = getInquiryDatePart(booking.inquiry_start_date)
-        if (!datePart) return false
-        return datePart >= from && datePart <= to
-      })
-    })
-
-    setLeads(filtered)
+    const contacts = (data as WatiContact[]) || []
+    setAllLeads(contacts)
+    applyRange(from, to, contacts)
     setLoading(false)
-  }, [])
+  }, [applyRange])
 
   useEffect(() => {
     if (!fromRef.current || !toRef.current) return
 
+    const initialToday = getDubaiToday()
+
     fpFromRef.current = flatpickr(fromRef.current, {
       dateFormat: 'Y-m-d',
-      defaultDate: today,
+      defaultDate: initialToday,
       disableMobile: true,
       onChange: (_dates, dateStr) => {
         setDateFrom(dateStr)
@@ -142,7 +165,7 @@ export function DailyReportPage() {
 
     fpToRef.current = flatpickr(toRef.current, {
       dateFormat: 'Y-m-d',
-      defaultDate: today,
+      defaultDate: initialToday,
       disableMobile: true,
       onChange: (_dates, dateStr) => {
         setDateTo(dateStr)
@@ -153,33 +176,30 @@ export function DailyReportPage() {
       },
     })
 
-    fetchLeads(today, today)
+    loadAllLeads(initialToday, initialToday)
 
     return () => {
       fpFromRef.current?.destroy()
       fpToRef.current?.destroy()
+      fpFromRef.current = null
+      fpToRef.current = null
     }
-  }, [fetchLeads, today])
+  }, [loadAllLeads])
 
   function applyFilter() {
-    if (!dateFrom || !dateTo) {
+    const { from, to } = getPickerRange()
+    if (!from || !to) {
       alert('Please select both From and To dates.')
       return
     }
-    setReportTitle(formatDateHeader(dateFrom, dateTo))
-    setOpenBookings(new Set())
-    fetchLeads(dateFrom, dateTo)
+    applyRange(from, to, allLeads)
   }
 
   function setToday() {
     const t = getDubaiToday()
     fpFromRef.current?.setDate(t, true)
     fpToRef.current?.setDate(t, true)
-    setDateFrom(t)
-    setDateTo(t)
-    setReportTitle(formatDateHeader(t, t))
-    setOpenBookings(new Set())
-    fetchLeads(t, t)
+    applyRange(t, t, allLeads)
   }
 
   function toggleBookings(rowId: string) {
