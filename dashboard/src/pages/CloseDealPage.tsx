@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { supabaseData } from '../lib/supabase'
-import { formatDubaiDate, formatLeadLocalDateTime, parseUaeStoredTimestamp } from '../lib/dubai'
+import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
 import {
   WEBHOOK_DEAL_CLOSED,
   type DealClosedPayload,
@@ -36,7 +36,7 @@ function mapRow(row: Record<string, unknown>): WhatsAppLead {
 function leadLabel(lead: WhatsAppLead): string {
   const place = lead.city ? `${lead.city}, ${lead.country}` : lead.country
   const cc = lead.country_code || '—'
-  return `${formatLeadLocalDateTime(lead.inquiry_time)} — ${lead.gclid ? 'GCLID ✓' : 'No GCLID'} · ${place} · ${cc}`
+  return `${formatDubaiDateTime(lead.inquiry_time)} — ${lead.gclid ? 'GCLID ✓' : 'No GCLID'} · ${place} · ${cc}`
 }
 
 function buildPayload(lead: WhatsAppLead, phone: string, amount: number): DealClosedPayload {
@@ -98,8 +98,7 @@ export function CloseDealPage() {
     return leads
       .filter((lead) => {
         if (!lead.inquiry_time) return false
-        const inquiryDate = parseUaeStoredTimestamp(lead.inquiry_time)
-        if (Number.isNaN(inquiryDate.getTime())) return false
+        const inquiryDate = new Date(lead.inquiry_time)
         if (activeFilter === 'today') {
           return formatDubaiDate(inquiryDate) === formatDubaiDate(now)
         }
@@ -111,11 +110,7 @@ export function CloseDealPage() {
         }
         return true
       })
-      .sort(
-        (a, b) =>
-          parseUaeStoredTimestamp(b.inquiry_time).getTime() -
-          parseUaeStoredTimestamp(a.inquiry_time).getTime(),
-      )
+      .sort((a, b) => new Date(b.inquiry_time).getTime() - new Date(a.inquiry_time).getTime())
   }, [leads, activeFilter, selectedDate])
 
   useEffect(() => {
