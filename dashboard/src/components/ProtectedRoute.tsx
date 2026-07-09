@@ -1,8 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { AUTH_ENABLED } from '../config/auth'
 import { useAuth } from '../context/AuthContext'
 
 export function ProtectedRoute() {
   const { session, loading } = useAuth()
+
+  if (!AUTH_ENABLED) {
+    return <Outlet />
+  }
 
   if (loading) {
     return (

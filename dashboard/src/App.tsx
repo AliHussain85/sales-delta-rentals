@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { AUTH_ENABLED } from './config/auth'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { DashboardLayout } from './components/DashboardLayout'
@@ -11,7 +12,10 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={AUTH_ENABLED ? <LoginPage /> : <Navigate to="/" replace />}
+        />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
