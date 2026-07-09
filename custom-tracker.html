@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delta Rentals — Close Deal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #050505;
+    --panel:     #0e0e0e;
+    --panel-2:   #171717;
+    --field:     #141414;
+    --border:    #2a2a2a;
+    --gold:      #d4af37;
+    --gold-lite: #f5d97a;
+    --gold-deep: #b8912b;
+    --btn:       #5e17eb;
+    --btn-lite:  #7b3ff2;
+    --btn-deep:  #4a11bd;
+    --text:      #ededed;
+    --muted:     #7d7d7d;
+    --success:   #4ade80;
+    --radius:    12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(212,175,55,0.06), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 760px;
+    background: linear-gradient(180deg, var(--panel), #0a0a0a);
+    border: 1px solid rgba(212,175,55,0.45);
+    border-radius: 18px;
+    padding: 34px 30px 30px;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.6),
+      0 30px 80px -20px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  .label {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .section + .section { margin-top: 26px; }
+
+  /* Filter segmented control */
+  .segments {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .seg {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 14px 6px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    line-height: 1.3;
+    transition: all 0.18s ease;
+  }
+  .seg:hover { border-color: rgba(94,23,235,0.5); color: var(--text); }
+  .seg.active {
+    background: linear-gradient(160deg, var(--btn-lite), var(--btn) 55%, var(--btn-deep));
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 6px 18px -6px rgba(94,23,235,0.6);
+  }
+  .seg:focus-visible { outline: 2px solid var(--btn-lite); outline-offset: 2px; }
+
+  /* Fields */
+  .field {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    padding: 15px 16px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .field::placeholder { color: #5a5a5a; }
+  .field:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+  }
+  input[type="date"].field::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) sepia(1) saturate(3) hue-rotate(5deg);
+    cursor: pointer;
+  }
+
+  .field.hidden { display: none; }
+
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .meta b { color: var(--gold); font-weight: 600; }
+
+  /* Close button */
+  .close-deal {
+    width: 100%;
+    margin-top: 30px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(160deg, var(--btn-lite), var(--btn) 55%, var(--btn-deep));
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 17px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    box-shadow: 0 10px 28px -10px rgba(94,23,235,0.6);
+  }
+  .close-deal:hover { filter: brightness(1.08); box-shadow: 0 14px 34px -10px rgba(94,23,235,0.75); }
+  .close-deal:active { transform: translateY(1px); }
+  .close-deal:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .close-deal:focus-visible { outline: 2px solid var(--btn-lite); outline-offset: 3px; }
+
+  .status {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 20px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .status.show { opacity: 1; transform: translateY(0); }
+  .status.ok  { color: var(--success); }
+  .status.err { color: #f87171; }
+
+  @media (max-width: 420px) {
+    .panel { padding: 26px 20px 24px; }
+    .seg { font-size: 10px; padding: 12px 4px; }
+  }
+</style>
+</head>
+<body>
+  <main class="panel" role="form" aria-label="Close deal">
+
+    <!-- FILTER -->
+    <div class="section">
+      <div class="label">Filter By</div>
+      <div class="segments" id="segments">
+        <button class="seg active" data-filter="all">All</button>
+        <button class="seg" data-filter="today">Today</button>
+        <button class="seg" data-filter="30">Last 30 Days</button>
+        <button class="seg" data-filter="date">By Date</button>
+      </div>
+      <input type="date" id="datePicker" class="field hidden" style="margin-top:12px" />
+    </div>
+
+    <!-- SELECT LEAD -->
+    <div class="section">
+      <div class="label">Select Lead</div>
+      <select id="leadSelect" class="field"></select>
+      <div class="meta"><b id="leadCount">0</b> leads found</div>
+    </div>
+
+    <!-- PHONE -->
+    <div class="section">
+      <div class="label">Phone Number</div>
+      <input type="tel" id="phoneNumber" class="field" placeholder="+971 56 669 9228" />
+    </div>
+
+    <!-- DEAL AMOUNT -->
+    <div class="section">
+      <div class="label">Deal Amount (AED)</div>
+      <input type="number" id="dealAmount" class="field" placeholder="Enter AED amount" min="0" step="1" />
+    </div>
+
+    <button class="close-deal" id="closeBtn">Close Deal</button>
+    <div class="status" id="status"></div>
+
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============================================================
+   Live data — whatsapp_clicks from Supabase
+   ============================================================ */
+
+const SUPABASE_URL      = "https://tipezmvjddkzlcyijqqq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpcGV6bXZqZGRremxjeWlqcXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNTMwMDEsImV4cCI6MjA4NDcyOTAwMX0.aJGzV4umjWyhSm28kPz4BjjLT9lSkaR_pwzZg-6HpZQ";
+const TABLE             = "whatsapp_clicks";
+const WEBHOOK_URL       = "https://api.deltarentalsdubai.com/webhook/deal-closed-whatsapp";
+
+const db = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+let LEADS = [];
+
+/* ---------- State ---------- */
+let activeFilter = "all";
+let selectedDate = null;
+
+/* ---------- Elements ---------- */
+const segments   = document.getElementById("segments");
+const datePicker = document.getElementById("datePicker");
+const leadSelect   = document.getElementById("leadSelect");
+const leadCount    = document.getElementById("leadCount");
+const phoneNumber  = document.getElementById("phoneNumber");
+const dealAmount   = document.getElementById("dealAmount");
+const closeBtn   = document.getElementById("closeBtn");
+const statusEl   = document.getElementById("status");
+
+/* ---------- Helpers ---------- */
+function dubaiParts(d) {
+  const o = {};
+  try {
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Dubai", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(d).forEach(p => { o[p.type] = p.value; });
+  } catch (e) {}
+  return o;
+}
+
+function fmtDate(d) {
+  const p = dubaiParts(d);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+function fmt(ts) {
+  const p = dubaiParts(new Date(ts));
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`;
+}
+
+function mapRow(r) {
+  return {
+    id:           r.id,
+    inquiry_time: r.inquiry_time,
+    gclid:        r.gclid || null,
+    utm_source:   r.utm_source || null,
+    utm_campaign: r.utm_campaign || null,
+    country:      r.country || "Unknown",
+    country_code: (r.country_code || "").toUpperCase(),
+    city:         r.city || "",
+    region:       r.region || ""
+  };
+}
+
+function loadLeads() {
+  if (!db) {
+    showStatus("Supabase client failed to load.", "err");
+    render();
+    return;
+  }
+
+  leadSelect.disabled = true;
+  leadSelect.innerHTML = "";
+  const loading = document.createElement("option");
+  loading.textContent = "Loading…";
+  loading.disabled = true;
+  loading.selected = true;
+  leadSelect.appendChild(loading);
+  leadCount.textContent = "…";
+
+  db.from(TABLE)
+    .select("id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region")
+    .order("inquiry_time", { ascending: false })
+    .limit(2000)
+    .then(({ data, error }) => {
+      if (error) {
+        LEADS = [];
+        showStatus("Couldn't load from Supabase: " + error.message, "err");
+        render();
+        return;
+      }
+      LEADS = (data || []).map(mapRow);
+      clearStatus();
+      render();
+    });
+}
+
+function filteredLeads() {
+  const now = new Date();
+  return LEADS.filter(l => {
+    if (!l.inquiry_time) return false;
+    const t = new Date(l.inquiry_time);
+    if (activeFilter === "today") return fmtDate(t) === fmtDate(now);
+    if (activeFilter === "30")    return (now - t) <= 30 * 864e5;
+    if (activeFilter === "date")  return selectedDate ? fmtDate(t) === selectedDate : false;
+    return true;
+  }).sort((a, b) => new Date(b.inquiry_time) - new Date(a.inquiry_time));
+}
+
+function label(l) {
+  const place = l.city ? `${l.city}, ${l.country}` : l.country;
+  const cc = l.country_code || "—";
+  return `${fmt(l.inquiry_time)} — ${l.gclid ? "GCLID ✓" : "No GCLID"} · ${place} · ${cc}`;
+}
+
+function addSelectPlaceholder(selected) {
+  const opt = document.createElement("option");
+  opt.value = "";
+  opt.textContent = "Select";
+  if (selected) opt.selected = true;
+  leadSelect.appendChild(opt);
+}
+
+function getSelectedLead() {
+  if (!leadSelect.value) return null;
+  return LEADS.find(l => String(l.id) === String(leadSelect.value)) || null;
+}
+
+function buildPayload(lead, phone, amount) {
+  return {
+    event: "deal_closed",
+    closed_at: new Date().toISOString(),
+    click_id: lead.id,
+    inquiry_time: lead.inquiry_time,
+    gclid: lead.gclid,
+    utm_source: lead.utm_source,
+    utm_campaign: lead.utm_campaign,
+    country: lead.country,
+    country_code: lead.country_code,
+    city: lead.city,
+    region: lead.region,
+    phone: phone,
+    deal_amount: amount,
+    deal_amount_currency: "AED"
+  };
+}
+
+async function submitDeal(payload) {
+  const res = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error("Webhook returned " + res.status);
+  return res;
+}
+
+/* ---------- Render ---------- */
+function render() {
+  const prevId = leadSelect.value;
+  const leads = filteredLeads();
+  leadSelect.innerHTML = "";
+
+  if (leads.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = activeFilter === "date" && !selectedDate
+      ? "Pick a date above…"
+      : "No leads for this filter";
+    opt.disabled = true;
+    opt.selected = true;
+    leadSelect.appendChild(opt);
+    leadSelect.disabled = true;
+  } else {
+    leadSelect.disabled = false;
+    const keepId = prevId && leads.some(l => String(l.id) === String(prevId)) ? prevId : "";
+    addSelectPlaceholder(!keepId);
+    leads.forEach(l => {
+      const opt = document.createElement("option");
+      opt.value = l.id;
+      opt.textContent = label(l);
+      if (keepId && String(l.id) === String(keepId)) opt.selected = true;
+      leadSelect.appendChild(opt);
+    });
+  }
+
+  leadCount.textContent = leads.length;
+}
+
+/* ---------- Events ---------- */
+segments.addEventListener("click", e => {
+  const btn = e.target.closest(".seg");
+  if (!btn) return;
+  document.querySelectorAll(".seg").forEach(s => s.classList.remove("active"));
+  btn.classList.add("active");
+  activeFilter = btn.dataset.filter;
+  datePicker.classList.toggle("hidden", activeFilter !== "date");
+  if (activeFilter === "date" && !datePicker.value) datePicker.focus();
+  render();
+});
+
+datePicker.addEventListener("change", () => {
+  selectedDate = datePicker.value || null;
+  render();
+});
+
+function clearStatus() {
+  statusEl.className = "status";
+  statusEl.textContent = "";
+}
+
+closeBtn.addEventListener("click", async () => {
+  const amount = parseFloat(dealAmount.value);
+  const phone = phoneNumber.value.trim();
+  const lead = getSelectedLead();
+
+  if (leadSelect.disabled || !lead) {
+    return showStatus("Select a lead first.", "err");
+  }
+  if (!phone) {
+    return showStatus("Enter a phone number.", "err");
+  }
+  if (!amount || amount <= 0) {
+    return showStatus("Enter a valid AED amount.", "err");
+  }
+
+  const payload = buildPayload(lead, phone, amount);
+  closeBtn.disabled = true;
+  closeBtn.textContent = "Closing…";
+  clearStatus();
+
+  try {
+    await submitDeal(payload);
+    showStatus(`✓ Deal closed — AED ${amount.toLocaleString()} sent!`, "ok");
+  } catch (err) {
+    showStatus("Couldn't send to webhook. Try again.", "err");
+  } finally {
+    closeBtn.disabled = false;
+    closeBtn.textContent = "Close Deal";
+  }
+});
+
+function showStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = `status show ${type}`;
+}
+
+/* ---------- Init ---------- */
+loadLeads();
+</script>
+</body>
+</html>
