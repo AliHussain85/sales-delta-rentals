@@ -8,8 +8,8 @@ function navClass({ isActive }: { isActive: boolean }) {
   return [
     'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
     isActive
-      ? 'bg-gold/15 text-gold-light ring-1 ring-gold/30'
-      : 'text-neutral-400 hover:bg-white/5 hover:text-white',
+      ? 'bg-gold/15 text-gold-dark ring-1 ring-gold/30'
+      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
   ].join(' ')
 }
 
@@ -28,10 +28,10 @@ export function DashboardLayout() {
       <div className="border-b border-border px-5 py-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/15 ring-1 ring-gold/30">
-            <span className="text-sm font-bold text-gold-light">DR</span>
+            <span className="text-sm font-bold text-gold-dark">DR</span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">Delta Rentals</p>
+            <p className="text-sm font-semibold text-neutral-900">Delta Rentals</p>
             <p className="text-xs text-neutral-500">Sales Dashboard</p>
           </div>
         </div>
@@ -43,7 +43,7 @@ export function DashboardLayout() {
           Overview
         </NavLink>
 
-        <p className="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-600">
+        <p className="px-3 pb-2 pt-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
           Tools
         </p>
 
@@ -65,7 +65,7 @@ export function DashboardLayout() {
         <button
           type="button"
           onClick={handleSignOut}
-          className="mt-3 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-neutral-400 transition hover:bg-white/5 hover:text-white"
+          className="mt-3 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900"
         >
           <LogOut className="h-4 w-4" />
           Sign out
@@ -75,8 +75,8 @@ export function DashboardLayout() {
   )
 
   return (
-    <div className="flex h-full min-h-screen bg-neutral-950">
-      <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:block">
+    <div className="flex h-full min-h-screen bg-neutral-100">
+      <aside className="hidden w-64 shrink-0 border-r border-border bg-white lg:block">
         {sidebar}
       </aside>
 
@@ -85,20 +85,20 @@ export function DashboardLayout() {
           <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative z-10 h-full w-72 border-r border-border bg-surface shadow-2xl">
+          <aside className="relative z-10 h-full w-72 border-r border-border bg-white shadow-2xl">
             {sidebar}
           </aside>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="border-b border-border bg-surface/80 px-4 py-3 lg:hidden">
+        <div className="border-b border-border bg-white px-4 py-3 lg:hidden">
           <button
             type="button"
-            className="rounded-lg p-2 text-neutral-400 hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
             onClick={() => setMobileOpen(true)}
           >
             <Menu className="h-5 w-5" />

@@ -3,11 +3,11 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-gold: #d4af37;
-  --color-gold-light: #f5d97a;
-  --color-gold-dark: #b8912b;
-  --color-surface: #0e0e0e;
-  --color-surface-2: #171717;
-  --color-border: #2a2a2a;
+  --color-gold-light: #b8912b;
+  --color-gold-dark: #96771f;
+  --color-surface: #ffffff;
+  --color-surface-2: #f9fafb;
+  --color-border: #e5e7eb;
 }
 
 * {
@@ -23,7 +23,7 @@ body,
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background: #050505;
-  color: #ededed;
+  background: #f5f5f5;
+  color: #1a1a1a;
   -webkit-font-smoothing: antialiased;
 }

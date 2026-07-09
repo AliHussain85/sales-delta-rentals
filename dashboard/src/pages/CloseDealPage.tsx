@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import {
-  formatDubaiDate,
-  formatDubaiDateTime,
-} from '../lib/dubai'
+import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
 import {
   WEBHOOK_DEAL_CLOSED,
   type DealClosedPayload,
@@ -18,6 +15,9 @@ const FILTERS: { id: LeadFilter; label: string }[] = [
   { id: '30', label: 'Last 30 Days' },
   { id: 'date', label: 'By Date' },
 ]
+
+const fieldClass =
+  'w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-gold/50 focus:ring-2 focus:ring-gold/20'
 
 function mapRow(row: Record<string, unknown>): WhatsAppLead {
   return {
@@ -163,15 +163,15 @@ export function CloseDealPage() {
     <div className="flex-1 overflow-y-auto p-4 lg:p-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-white">Close Deal</h1>
-          <p className="mt-1 text-sm text-neutral-400">
+          <h1 className="text-2xl font-semibold text-neutral-900">Close Deal</h1>
+          <p className="mt-1 text-sm text-neutral-500">
             Match a WhatsApp lead and submit the closed deal.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gold/30 bg-gradient-to-b from-surface to-neutral-950 p-6 shadow-2xl shadow-black/40 lg:p-8">
+        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm lg:p-8">
           <section className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Filter By
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -183,8 +183,8 @@ export function CloseDealPage() {
                   className={[
                     'rounded-xl border px-2 py-3 text-[11px] font-semibold uppercase tracking-wide transition',
                     activeFilter === filter.id
-                      ? 'border-transparent bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow-lg shadow-violet-900/40'
-                      : 'border-border bg-surface-2 text-neutral-400 hover:border-violet-500/40 hover:text-white',
+                      ? 'border-transparent bg-violet-600 text-white shadow-md shadow-violet-200'
+                      : 'border-border bg-neutral-50 text-neutral-600 hover:border-violet-300 hover:text-neutral-900',
                   ].join(' ')}
                 >
                   {filter.label}
@@ -196,20 +196,20 @@ export function CloseDealPage() {
                 type="date"
                 value={selectedDate ?? ''}
                 onChange={(event) => setSelectedDate(event.target.value || null)}
-                className="mt-2 w-full rounded-xl border border-border bg-neutral-900 px-4 py-3 text-sm text-white outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20"
+                className={fieldClass}
               />
             )}
           </section>
 
           <section className="mt-6 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Select Lead
             </p>
             <select
               disabled={loading || filteredLeads.length === 0}
               value={selectedLeadId}
               onChange={(event) => setSelectedLeadId(event.target.value)}
-              className="w-full appearance-none rounded-xl border border-border bg-neutral-900 px-4 py-3 text-sm text-white outline-none focus:border-gold/50 focus:ring-2 focus:ring-gold/20 disabled:opacity-50"
+              className={`${fieldClass} disabled:opacity-50`}
             >
               {loading ? (
                 <option>Loading…</option>
@@ -231,18 +231,18 @@ export function CloseDealPage() {
               )}
             </select>
             <p className="text-right text-xs text-neutral-500">
-              <span className="font-semibold text-gold">{loading ? '…' : filteredLeads.length}</span>{' '}
+              <span className="font-semibold text-gold-dark">{loading ? '…' : filteredLeads.length}</span>{' '}
               leads found
             </p>
             {loadError && (
-              <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+              <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
                 Couldn't load from Supabase: {loadError}
               </p>
             )}
           </section>
 
           <section className="mt-6 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Phone Number
             </p>
             <input
@@ -250,12 +250,12 @@ export function CloseDealPage() {
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
               placeholder="+971 56 669 9228"
-              className="w-full rounded-xl border border-border bg-neutral-900 px-4 py-3 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-gold/50 focus:ring-2 focus:ring-gold/20"
+              className={fieldClass}
             />
           </section>
 
           <section className="mt-6 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Deal Amount (AED)
             </p>
             <input
@@ -265,7 +265,7 @@ export function CloseDealPage() {
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="Enter AED amount"
-              className="w-full rounded-xl border border-border bg-neutral-900 px-4 py-3 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-gold/50 focus:ring-2 focus:ring-gold/20"
+              className={fieldClass}
             />
           </section>
 
@@ -273,7 +273,7 @@ export function CloseDealPage() {
             type="button"
             disabled={submitting || loading}
             onClick={handleSubmit}
-            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-lg shadow-violet-900/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 py-4 text-sm font-bold uppercase tracking-wider text-white shadow-md shadow-violet-200 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? (
               <>
@@ -289,7 +289,7 @@ export function CloseDealPage() {
             <p
               className={[
                 'mt-4 text-center text-sm font-semibold',
-                status.type === 'ok' ? 'text-green-400' : 'text-red-400',
+                status.type === 'ok' ? 'text-green-600' : 'text-red-600',
               ].join(' ')}
             >
               {status.message}
