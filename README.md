@@ -32,22 +32,39 @@ Both pages talk to Supabase directly from React — no iframes, no HTML/PHP file
 
 1. Create a user under **Authentication → Users** in Supabase
 2. Enable the **Email** provider
-3. Set credentials in `dashboard/.env`:
+3. Set credentials in `dashboard/.env` (local) or Netlify env vars (production):
 
 ```
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
-## Production
+4. In Supabase → **Authentication → URL Configuration**, add your Netlify site URL:
+   - Site URL: `https://your-site.netlify.app` (or custom domain)
+   - Redirect URLs: `https://your-site.netlify.app/**`
+
+## Deploy on Netlify
+
+Connect the GitHub repo — Netlify reads `netlify.toml` at the repo root automatically:
+
+| Setting | Value |
+|---------|-------|
+| Base directory | `dashboard` |
+| Build command | `npm run build` |
+| Publish directory | `dashboard/dist` |
+
+**Environment variables** (Netlify → Site settings → Environment variables):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Then trigger a deploy. Your app lives at **`https://your-domain.com/`** (root).
+
+## Manual build
 
 ```bash
 cd dashboard
 npm run build
 ```
 
-Copy everything from `dashboard/dist/` into your site **web root** (e.g. XAMPP htdocs for `sales.deltarentalsdubai.com`).
-
-The build includes `.htaccess` for Apache SPA routing so routes like `/daily-report` work on refresh.
-
-App URL: **`https://your-domain.com/`** (root, not `/dashboard`).
+Output is in `dashboard/dist/`.
