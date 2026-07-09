@@ -39,6 +39,29 @@ export function formatDubaiDateTime(timestamp: string): string {
   return `${datePart} ${timePart}`
 }
 
+/**
+ * inquiry_time is stored as UAE wall-clock time but labeled UTC (+00:00).
+ * Strip the wrong offset and re-interpret the value as +04:00 (Asia/Dubai)
+ * to get the real moment in time.
+ */
+export function parseUaeStoredTimestamp(timestamp: string): Date {
+  const wallClock = timestamp.replace(/(\.\d+)?(Z|[+-]\d{2}:?\d{2})$/, '')
+  return new Date(`${wallClock}+04:00`)
+}
+
+/** Format a UAE-stored timestamp in the viewer's local timezone (12-hour). */
+export function formatLeadLocalDateTime(timestamp: string): string {
+  const date = parseUaeStoredTimestamp(timestamp)
+  if (Number.isNaN(date.getTime())) return timestamp
+  const datePart = date.toLocaleDateString('en-CA')
+  const timePart = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+  return `${datePart} ${timePart}`
+}
+
 export function formatDateHeader(fromStr: string, toStr: string): string {
   const fmt = (str: string) =>
     new Date(`${str}T00:00:00`).toLocaleDateString('en-US', {

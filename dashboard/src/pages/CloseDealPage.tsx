@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { supabaseData } from '../lib/supabase'
-import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
+import { formatDubaiDate, formatLeadLocalDateTime } from '../lib/dubai'
 import {
   WEBHOOK_DEAL_CLOSED,
   type DealClosedPayload,
@@ -36,7 +36,7 @@ function mapRow(row: Record<string, unknown>): WhatsAppLead {
 function leadLabel(lead: WhatsAppLead): string {
   const place = lead.city ? `${lead.city}, ${lead.country}` : lead.country
   const cc = lead.country_code || '—'
-  return `${formatDubaiDateTime(lead.inquiry_time)} — ${lead.gclid ? 'GCLID ✓' : 'No GCLID'} · ${place} · ${cc}`
+  return `${formatLeadLocalDateTime(lead.inquiry_time)} — ${lead.gclid ? 'GCLID ✓' : 'No GCLID'} · ${place} · ${cc}`
 }
 
 function buildPayload(lead: WhatsAppLead, phone: string, amount: number): DealClosedPayload {
