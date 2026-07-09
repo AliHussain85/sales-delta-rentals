@@ -95,21 +95,15 @@ export function DashboardLayout() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border bg-surface/80 px-4 py-3 backdrop-blur lg:px-6">
+        <div className="border-b border-border bg-surface/80 px-4 py-3 lg:hidden">
           <button
             type="button"
-            className="rounded-lg p-2 text-neutral-400 hover:bg-white/5 hover:text-white lg:hidden"
+            className="rounded-lg p-2 text-neutral-400 hover:bg-white/5 hover:text-white"
             onClick={() => setMobileOpen(true)}
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="hidden lg:block">
-            <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-              Delta Rentals Dubai
-            </p>
-          </div>
-          <div className="w-9 lg:hidden" aria-hidden />
-        </header>
+        </div>
 
         <main className="flex min-h-0 flex-1 flex-col">
           <Outlet />
