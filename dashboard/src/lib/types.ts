@@ -13,6 +13,22 @@ export type WhatsAppLead = {
   country_code: string
   city: string
   region: string
+  lead_value?: string | number | null
+  whatsapp_number?: string | null
+  closed_time?: string | null
+}
+
+export function parseLeadValue(value: WhatsAppLead['lead_value']): number | null {
+  if (value === null || value === undefined || value === '') return null
+  const parsed = parseFloat(String(value))
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+/** Saved when Supabase has both phone and deal amount on the lead row. */
+export function isLeadSaved(lead: WhatsAppLead): boolean {
+  const phone = lead.whatsapp_number?.trim()
+  const amount = parseLeadValue(lead.lead_value)
+  return Boolean(phone) && amount !== null && amount > 0
 }
 
 export type DealClosedPayload = {

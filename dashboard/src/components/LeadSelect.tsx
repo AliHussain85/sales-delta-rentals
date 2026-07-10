@@ -6,15 +6,13 @@ import Select, {
 } from 'react-select'
 import { CheckCircle2 } from 'lucide-react'
 import { formatDubaiDateTime } from '../lib/dubai'
-import { isLeadClosed, type ClosedLeadRecord } from '../lib/closedLeads'
-import type { WhatsAppLead } from '../lib/types'
+import { isLeadSaved, parseLeadValue, type WhatsAppLead } from '../lib/types'
 
 export type LeadOption = {
   value: string
   label: string
   lead: WhatsAppLead
-  closed: boolean
-  closedRecord?: ClosedLeadRecord
+  saved: boolean
   searchText: string
 }
 
@@ -29,37 +27,47 @@ function buildSearchText(lead: WhatsAppLead): string {
     lead.country_code,
     lead.city,
     lead.region,
+    lead.whatsapp_number,
+    lead.lead_value,
   ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
 }
 
-export function buildLeadOptions(
-  leads: WhatsAppLead[],
-  closedMap: Record<string, ClosedLeadRecord>,
-): LeadOption[] {
+export function buildLeadOptions(leads: WhatsAppLead[]): LeadOption[] {
   return leads.map((lead) => {
     const id = String(lead.id)
-    const closedRecord = closedMap[id]
-    const closed = isLeadClosed(id, closedMap)
+    const saved = isLeadSaved(lead)
     const place = lead.city ? `${lead.city}, ${lead.country}` : lead.country
     const gclidTag = lead.gclid ? 'GCLID ✓' : 'No GCLID'
-    const prefix = closed ? '✓ Closed · ' : ''
+    const prefix = saved ? '✓ Saved · ' : ''
     return {
       value: id,
       label: `${prefix}${formatDubaiDateTime(lead.inquiry_time)} — ${gclidTag} · ${place} · ${lead.country_code || '—'}`,
       lead,
-      closed,
-      closedRecord,
+      saved,
       searchText: buildSearchText(lead),
     }
   })
 }
 
+function optionBackground(saved: boolean, isSelected: boolean, isFocused: boolean): string {
+  if (saved) {
+    if (isSelected) return 'bg-green-100'
+    if (isFocused) return 'bg-green-100'
+    return 'bg-green-50'
+  }
+  if (isSelected) return 'bg-violet-50'
+  if (isFocused) return 'bg-neutral-50'
+  return 'bg-white'
+}
+
 function LeadOptionRow(props: OptionProps<LeadOption, false, GroupBase<LeadOption>>) {
   const { data, innerProps, innerRef, isFocused, isSelected } = props
   const place = data.lead.city ? `${data.lead.city}, ${data.lead.country}` : data.lead.country
+  const amount = parseLeadValue(data.lead.lead_value)
+  const phone = data.lead.whatsapp_number?.trim()
 
   return (
     <div
@@ -67,8 +75,8 @@ function LeadOptionRow(props: OptionProps<LeadOption, false, GroupBase<LeadOptio
       {...innerProps}
       className={[
         'cursor-pointer border-b border-neutral-100 px-3 py-3 last:border-b-0',
-        isSelected ? 'bg-violet-50' : isFocused ? 'bg-neutral-50' : 'bg-white',
-        data.closed ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-transparent',
+        optionBackground(data.saved, isSelected, isFocused),
+        data.saved ? 'border-l-4 border-l-green-400' : 'border-l-4 border-l-transparent',
       ].join(' ')}
     >
       <div className="flex items-start justify-between gap-3">
@@ -79,14 +87,14 @@ function LeadOptionRow(props: OptionProps<LeadOption, false, GroupBase<LeadOptio
           <p className="mt-1 text-xs text-neutral-600">
             {data.lead.gclid ? 'GCLID ✓' : 'No GCLID'} · {place} · {data.lead.country_code || '—'}
           </p>
-          {data.closedRecord && (
-            <p className="mt-1 text-xs font-medium text-green-700">
-              Closed · AED {data.closedRecord.amount.toLocaleString()} · {data.closedRecord.phone}
+          {data.saved && phone && amount !== null && (
+            <p className="mt-1.5 text-xs font-semibold text-green-800">
+              Saved · {phone} · AED {amount.toLocaleString()}
             </p>
           )}
         </div>
-        {data.closed && (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-800">
+        {data.saved && (
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-200/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-900">
             <CheckCircle2 className="h-3 w-3" />
             Saved
           </span>

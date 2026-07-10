@@ -4,12 +4,9 @@ import { LeadSelect, buildLeadOptions } from '../components/LeadSelect'
 import { supabaseData } from '../lib/supabase'
 import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
 import {
-  getClosedLeadsMap,
-  markLeadClosed,
-  type ClosedLeadRecord,
-} from '../lib/closedLeads'
-import {
   WEBHOOK_DEAL_CLOSED,
+  isLeadSaved,
+  parseLeadValue,
   type DealClosedPayload,
   type LeadFilter,
   type WhatsAppLead,
@@ -36,6 +33,9 @@ function mapRow(row: Record<string, unknown>): WhatsAppLead {
     country_code: String(row.country_code || '').toUpperCase(),
     city: (row.city as string) || '',
     region: (row.region as string) || '',
+    lead_value: (row.lead_value as string | number) ?? null,
+    whatsapp_number: (row.whatsapp_number as string) ?? null,
+    closed_time: (row.closed_time as string) ?? null,
   }
 }
 
@@ -60,9 +60,6 @@ function buildPayload(lead: WhatsAppLead, phone: string, amount: number): DealCl
 
 export function CloseDealPage() {
   const [leads, setLeads] = useState<WhatsAppLead[]>([])
-  const [closedMap, setClosedMap] = useState<Record<string, ClosedLeadRecord>>(() =>
-    getClosedLeadsMap(),
-  )
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('all')
@@ -79,7 +76,9 @@ export function CloseDealPage() {
 
     const { data, error } = await supabaseData
       .from('whatsapp_clicks')
-      .select('id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region')
+      .select(
+        'id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region,lead_value,whatsapp_number,closed_time',
+      )
       .order('inquiry_time', { ascending: false })
       .limit(2000)
 
@@ -116,13 +115,10 @@ export function CloseDealPage() {
       .sort((a, b) => new Date(b.inquiry_time).getTime() - new Date(a.inquiry_time).getTime())
   }, [leads, activeFilter, selectedDate])
 
-  const leadOptions = useMemo(
-    () => buildLeadOptions(filteredLeads, closedMap),
-    [filteredLeads, closedMap],
-  )
+  const leadOptions = useMemo(() => buildLeadOptions(filteredLeads), [filteredLeads])
 
-  const closedInFilterCount = useMemo(
-    () => leadOptions.filter((opt) => opt.closed).length,
+  const savedInFilterCount = useMemo(
+    () => leadOptions.filter((opt) => opt.saved).length,
     [leadOptions],
   )
 
@@ -133,6 +129,15 @@ export function CloseDealPage() {
   }, [leadOptions, selectedLeadId])
 
   const selectedLead = filteredLeads.find((lead) => String(lead.id) === selectedLeadId) ?? null
+
+  useEffect(() => {
+    if (!selectedLead) return
+    if (isLeadSaved(selectedLead)) {
+      setPhone(selectedLead.whatsapp_number?.trim() ?? '')
+      const savedAmount = parseLeadValue(selectedLead.lead_value)
+      setAmount(savedAmount !== null ? String(savedAmount) : '')
+    }
+  }, [selectedLead])
 
   async function handleSubmit() {
     const parsedAmount = parseFloat(amount)
@@ -162,14 +167,7 @@ export function CloseDealPage() {
       })
       if (!res.ok) throw new Error(`Webhook returned ${res.status}`)
 
-      const record: ClosedLeadRecord = {
-        leadId: String(selectedLead.id),
-        phone: phone.trim(),
-        amount: parsedAmount,
-        closedAt: new Date().toISOString(),
-      }
-      markLeadClosed(record)
-      setClosedMap(getClosedLeadsMap())
+      await loadLeads()
 
       setStatus({
         type: 'ok',
@@ -237,7 +235,7 @@ export function CloseDealPage() {
               placeholder={
                 activeFilter === 'date' && !selectedDate
                   ? 'Pick a date above first…'
-                  : 'Search leads by date, city, country, GCLID…'
+                  : 'Search leads by date, city, country, phone, GCLID…'
               }
             />
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
@@ -245,17 +243,30 @@ export function CloseDealPage() {
                 <span className="font-semibold text-gold-dark">{loading ? '…' : leadOptions.length}</span>{' '}
                 leads in filter
               </span>
-              {closedInFilterCount > 0 && (
+              {savedInFilterCount > 0 && (
                 <span className="font-medium text-green-700">
-                  {closedInFilterCount} marked as saved
+                  {savedInFilterCount} saved in Supabase
                 </span>
               )}
             </div>
             {selectedLead && (
-              <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
-                <span className="font-semibold text-neutral-900">Selected:</span>{' '}
+              <div
+                className={[
+                  'rounded-xl border px-4 py-3 text-sm',
+                  isLeadSaved(selectedLead)
+                    ? 'border-green-200 bg-green-50 text-green-900'
+                    : 'border-neutral-200 bg-neutral-50 text-neutral-700',
+                ].join(' ')}
+              >
+                <span className="font-semibold">Selected:</span>{' '}
                 {formatDubaiDateTime(selectedLead.inquiry_time)} ·{' '}
                 {selectedLead.city ? `${selectedLead.city}, ${selectedLead.country}` : selectedLead.country}
+                {isLeadSaved(selectedLead) && (
+                  <p className="mt-1 text-xs font-semibold text-green-800">
+                    Saved · {selectedLead.whatsapp_number} · AED{' '}
+                    {parseLeadValue(selectedLead.lead_value)?.toLocaleString()}
+                  </p>
+                )}
               </div>
             )}
             {loadError && (
