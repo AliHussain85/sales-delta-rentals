@@ -238,17 +238,16 @@ export function CloseDealPage() {
                   : 'Search leads by date, city, country, phone, GCLID…'
               }
             />
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-              <span>
-                <span className="font-semibold text-gold-dark">{loading ? '…' : leadOptions.length}</span>{' '}
-                leads in filter
-              </span>
-              {savedInFilterCount > 0 && (
-                <span className="font-medium text-green-700">
-                  {savedInFilterCount} saved in Supabase
-                </span>
+            <p className="text-right text-xs text-neutral-500">
+              <span className="font-semibold text-gold-dark">{loading ? '…' : leadOptions.length}</span>{' '}
+              leads in filter
+              {!loading && savedInFilterCount > 0 && (
+                <>
+                  {' · '}
+                  <span className="font-semibold text-green-700">{savedInFilterCount} saved</span>
+                </>
               )}
-            </div>
+            </p>
             {selectedLead && (
               <div
                 className={[
