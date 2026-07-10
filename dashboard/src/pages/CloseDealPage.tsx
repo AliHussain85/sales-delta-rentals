@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { LeadSelect, buildLeadOptions } from '../components/LeadSelect'
 import { supabaseData } from '../lib/supabase'
 import { formatDubaiDate, formatDubaiDateTime } from '../lib/dubai'
+import {
+  getClosedLeadsMap,
+  markLeadClosed,
+  type ClosedLeadRecord,
+} from '../lib/closedLeads'
 import {
   WEBHOOK_DEAL_CLOSED,
   type DealClosedPayload,
@@ -33,12 +39,6 @@ function mapRow(row: Record<string, unknown>): WhatsAppLead {
   }
 }
 
-function leadLabel(lead: WhatsAppLead): string {
-  const place = lead.city ? `${lead.city}, ${lead.country}` : lead.country
-  const cc = lead.country_code || '—'
-  return `${formatDubaiDateTime(lead.inquiry_time)} — ${lead.gclid ? 'GCLID ✓' : 'No GCLID'} · ${place} · ${cc}`
-}
-
 function buildPayload(lead: WhatsAppLead, phone: string, amount: number): DealClosedPayload {
   return {
     event: 'deal_closed',
@@ -60,6 +60,9 @@ function buildPayload(lead: WhatsAppLead, phone: string, amount: number): DealCl
 
 export function CloseDealPage() {
   const [leads, setLeads] = useState<WhatsAppLead[]>([])
+  const [closedMap, setClosedMap] = useState<Record<string, ClosedLeadRecord>>(() =>
+    getClosedLeadsMap(),
+  )
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [activeFilter, setActiveFilter] = useState<LeadFilter>('all')
@@ -113,11 +116,21 @@ export function CloseDealPage() {
       .sort((a, b) => new Date(b.inquiry_time).getTime() - new Date(a.inquiry_time).getTime())
   }, [leads, activeFilter, selectedDate])
 
+  const leadOptions = useMemo(
+    () => buildLeadOptions(filteredLeads, closedMap),
+    [filteredLeads, closedMap],
+  )
+
+  const closedInFilterCount = useMemo(
+    () => leadOptions.filter((opt) => opt.closed).length,
+    [leadOptions],
+  )
+
   useEffect(() => {
-    if (!filteredLeads.some((lead) => String(lead.id) === selectedLeadId)) {
+    if (!leadOptions.some((opt) => opt.value === selectedLeadId)) {
       setSelectedLeadId('')
     }
-  }, [filteredLeads, selectedLeadId])
+  }, [leadOptions, selectedLeadId])
 
   const selectedLead = filteredLeads.find((lead) => String(lead.id) === selectedLeadId) ?? null
 
@@ -148,6 +161,16 @@ export function CloseDealPage() {
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(`Webhook returned ${res.status}`)
+
+      const record: ClosedLeadRecord = {
+        leadId: String(selectedLead.id),
+        phone: phone.trim(),
+        amount: parsedAmount,
+        closedAt: new Date().toISOString(),
+      }
+      markLeadClosed(record)
+      setClosedMap(getClosedLeadsMap())
+
       setStatus({
         type: 'ok',
         message: `✓ Deal closed — AED ${parsedAmount.toLocaleString()} sent!`,
@@ -205,35 +228,36 @@ export function CloseDealPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
               Select Lead
             </p>
-            <select
-              disabled={loading || filteredLeads.length === 0}
+            <LeadSelect
+              options={leadOptions}
               value={selectedLeadId}
-              onChange={(event) => setSelectedLeadId(event.target.value)}
-              className={`${fieldClass} disabled:opacity-50`}
-            >
-              {loading ? (
-                <option>Loading…</option>
-              ) : filteredLeads.length === 0 ? (
-                <option>
-                  {activeFilter === 'date' && !selectedDate
-                    ? 'Pick a date above…'
-                    : 'No leads for this filter'}
-                </option>
-              ) : (
-                <>
-                  <option value="">Select</option>
-                  {filteredLeads.map((lead) => (
-                    <option key={lead.id} value={String(lead.id)}>
-                      {leadLabel(lead)}
-                    </option>
-                  ))}
-                </>
+              onChange={setSelectedLeadId}
+              loading={loading}
+              disabled={!loading && leadOptions.length === 0}
+              placeholder={
+                activeFilter === 'date' && !selectedDate
+                  ? 'Pick a date above first…'
+                  : 'Search leads by date, city, country, GCLID…'
+              }
+            />
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+              <span>
+                <span className="font-semibold text-gold-dark">{loading ? '…' : leadOptions.length}</span>{' '}
+                leads in filter
+              </span>
+              {closedInFilterCount > 0 && (
+                <span className="font-medium text-green-700">
+                  {closedInFilterCount} marked as saved
+                </span>
               )}
-            </select>
-            <p className="text-right text-xs text-neutral-500">
-              <span className="font-semibold text-gold-dark">{loading ? '…' : filteredLeads.length}</span>{' '}
-              leads found
-            </p>
+            </div>
+            {selectedLead && (
+              <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+                <span className="font-semibold text-neutral-900">Selected:</span>{' '}
+                {formatDubaiDateTime(selectedLead.inquiry_time)} ·{' '}
+                {selectedLead.city ? `${selectedLead.city}, ${selectedLead.country}` : selectedLead.country}
+              </div>
+            )}
             {loadError && (
               <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
                 Couldn't load from Supabase: {loadError}
