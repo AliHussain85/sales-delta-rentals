@@ -27,6 +27,7 @@ function buildSearchText(lead: WhatsAppLead): string {
     lead.country_code,
     lead.city,
     lead.region,
+    lead.vipcode,
     lead.whatsapp_number,
     lead.lead_value,
   ]
@@ -41,10 +42,11 @@ export function buildLeadOptions(leads: WhatsAppLead[]): LeadOption[] {
     const saved = isLeadSaved(lead)
     const place = lead.city ? `${lead.city}, ${lead.country}` : lead.country
     const gclidTag = lead.gclid ? 'GCLID ✓' : 'No GCLID'
+    const vipTag = lead.vipcode ? `VIP ${lead.vipcode}` : 'No VIP'
     const prefix = saved ? '✓ Saved · ' : ''
     return {
       value: id,
-      label: `${prefix}${formatDubaiDateTime(lead.inquiry_time)} — ${gclidTag} · ${place} · ${lead.country_code || '—'}`,
+      label: `${prefix}${formatDubaiDateTime(lead.inquiry_time)} — ${gclidTag} · ${vipTag} · ${place} · ${lead.country_code || '—'}`,
       lead,
       saved,
       searchText: buildSearchText(lead),
@@ -85,7 +87,9 @@ function LeadOptionRow(props: OptionProps<LeadOption, false, GroupBase<LeadOptio
             {formatDubaiDateTime(data.lead.inquiry_time)}
           </p>
           <p className="mt-1 text-xs text-neutral-600">
-            {data.lead.gclid ? 'GCLID ✓' : 'No GCLID'} · {place} · {data.lead.country_code || '—'}
+            {data.lead.gclid ? 'GCLID ✓' : 'No GCLID'} ·{' '}
+            {data.lead.vipcode ? `VIP ${data.lead.vipcode}` : 'No VIP'} · {place} ·{' '}
+            {data.lead.country_code || '—'}
           </p>
           {data.saved && phone && amount !== null && (
             <p className="mt-1.5 text-xs font-semibold text-green-800">
@@ -151,7 +155,7 @@ export function LeadSelect({
   onChange,
   loading = false,
   disabled = false,
-  placeholder = 'Search leads by date, city, country, GCLID…',
+  placeholder = 'Search leads by date, city, country, VIP code, GCLID…',
 }: LeadSelectProps) {
   const selected = options.find((opt) => opt.value === value) ?? null
 

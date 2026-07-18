@@ -13,6 +13,7 @@ export type WhatsAppLead = {
   country_code: string
   city: string
   region: string
+  vipcode?: string | null
   lead_value?: string | number | null
   whatsapp_number?: string | null
   closed_time?: string | null

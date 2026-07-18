@@ -33,6 +33,7 @@ function mapRow(row: Record<string, unknown>): WhatsAppLead {
     country_code: String(row.country_code || '').toUpperCase(),
     city: (row.city as string) || '',
     region: (row.region as string) || '',
+    vipcode: (row.vipcode as string) || null,
     lead_value: (row.lead_value as string | number) ?? null,
     whatsapp_number: (row.whatsapp_number as string) ?? null,
     closed_time: (row.closed_time as string) ?? null,
@@ -77,7 +78,7 @@ export function CloseDealPage() {
     const { data, error } = await supabaseData
       .from('whatsapp_clicks')
       .select(
-        'id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region,lead_value,whatsapp_number,closed_time',
+        'id,inquiry_time,gclid,utm_source,utm_campaign,country,country_code,city,region,vipcode,lead_value,whatsapp_number,closed_time',
       )
       .order('inquiry_time', { ascending: false })
       .limit(2000)
@@ -235,7 +236,7 @@ export function CloseDealPage() {
               placeholder={
                 activeFilter === 'date' && !selectedDate
                   ? 'Pick a date above first…'
-                  : 'Search leads by date, city, country, phone, GCLID…'
+                  : 'Search leads by date, city, country, VIP code, phone, GCLID…'
               }
             />
             <p className="text-right text-xs text-neutral-500">
@@ -260,6 +261,7 @@ export function CloseDealPage() {
                 <span className="font-semibold">Selected:</span>{' '}
                 {formatDubaiDateTime(selectedLead.inquiry_time)} ·{' '}
                 {selectedLead.city ? `${selectedLead.city}, ${selectedLead.country}` : selectedLead.country}
+                {selectedLead.vipcode ? ` · VIP ${selectedLead.vipcode}` : ''}
                 {isLeadSaved(selectedLead) && (
                   <p className="mt-1 text-xs font-semibold text-green-800">
                     Saved · {selectedLead.whatsapp_number} · AED{' '}
