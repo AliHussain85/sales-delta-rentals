@@ -258,10 +258,34 @@ export function CloseDealPage() {
                     : 'border-neutral-200 bg-neutral-50 text-neutral-700',
                 ].join(' ')}
               >
-                <span className="font-semibold">Selected:</span>{' '}
-                {formatDubaiDateTime(selectedLead.inquiry_time)} ·{' '}
-                {selectedLead.city ? `${selectedLead.city}, ${selectedLead.country}` : selectedLead.country}
-                {selectedLead.vipcode ? ` · VIP ${selectedLead.vipcode}` : ''}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span
+                    className={[
+                      'inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-extrabold tracking-wide',
+                      selectedLead.vipcode
+                        ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-500/40'
+                        : 'bg-neutral-200 text-neutral-500',
+                    ].join(' ')}
+                  >
+                    {selectedLead.vipcode ? selectedLead.vipcode : 'No VIP'}
+                  </span>
+                  <span
+                    className={[
+                      'inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-extrabold tracking-wide',
+                      selectedLead.gclid
+                        ? 'bg-violet-600 text-white ring-1 ring-violet-700/40'
+                        : 'bg-neutral-200 text-neutral-500',
+                    ].join(' ')}
+                  >
+                    {selectedLead.gclid ? 'GCLID ✓' : 'No GCLID'}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-xs text-neutral-600">
+                  {formatDubaiDateTime(selectedLead.inquiry_time)} ·{' '}
+                  {selectedLead.city
+                    ? `${selectedLead.city}, ${selectedLead.country}`
+                    : selectedLead.country}
+                </p>
                 {isLeadSaved(selectedLead) && (
                   <p className="mt-1 text-xs font-semibold text-green-800">
                     Saved · {selectedLead.whatsapp_number} · AED{' '}
