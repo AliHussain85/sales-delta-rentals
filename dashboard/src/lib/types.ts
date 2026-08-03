@@ -38,6 +38,7 @@ export type DealClosedPayload = {
   click_id: string | number
   inquiry_time: string
   gclid: string | null
+  vipcode: string | null
   utm_source: string | null
   utm_campaign: string | null
   country: string
