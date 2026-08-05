@@ -82,3 +82,18 @@ export function getInquiryDatePart(dateStr?: string | null): string | null {
   if (!dateStr) return null
   return dateStr.slice(0, 10)
 }
+
+/**
+ * Format booking inquiry_start_date (UAE wall-clock, e.g. "2026-08-05T00:57")
+ * as 12-hour time. No timezone conversion — value is already Dubai local.
+ */
+export function formatInquiryStartTime(dateStr?: string | null): string {
+  if (!dateStr) return '—'
+  const match = dateStr.match(/T(\d{2}):(\d{2})/)
+  if (!match) return '—'
+  let hour = Number(match[1])
+  const minute = match[2]
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  hour = hour % 12 || 12
+  return `${hour}:${minute} ${ampm}`
+}

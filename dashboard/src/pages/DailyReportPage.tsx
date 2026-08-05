@@ -7,8 +7,8 @@ import { supabaseData } from '../lib/supabase'
 import { getCountryFromPhone } from '../lib/countryPrefixes'
 import {
   formatDateHeader,
+  formatInquiryStartTime,
   formatShortDate,
-  formatTimeUae,
   getDubaiToday,
   getInquiryDatePart,
 } from '../lib/dubai'
@@ -27,15 +27,32 @@ function stageBadgeClass(stage?: string): string {
   return map[key] ?? 'bg-neutral-100 text-neutral-600'
 }
 
+function bookingInRange(booking: Booking, from: string, to: string): boolean {
+  const datePart = getInquiryDatePart(booking.inquiry_start_date)
+  if (!datePart) return false
+  return datePart >= from && datePart <= to
+}
+
+function getMatchingBookings(lead: WatiContact, from: string, to: string): Booking[] {
+  return parseBookings(lead.bookings)
+    .filter((booking) => bookingInRange(booking, from, to))
+    .sort((a, b) =>
+      String(a.inquiry_start_date || '').localeCompare(String(b.inquiry_start_date || '')),
+    )
+}
+
+/** Time column: inquiry_start_date(s) from bookings that match the active filter. */
+function getLeadInquiryTimes(lead: WatiContact, from: string, to: string): string {
+  const matching = getMatchingBookings(lead, from, to)
+  const source = matching.length > 0 ? matching : parseBookings(lead.bookings)
+  const times = source
+    .map((booking) => formatInquiryStartTime(booking.inquiry_start_date))
+    .filter((time) => time !== '—')
+  return times.length > 0 ? [...new Set(times)].join(', ') : '—'
+}
+
 function filterLeadsByRange(allLeads: WatiContact[], from: string, to: string) {
-  return allLeads.filter((lead) => {
-    const bookings = parseBookings(lead.bookings)
-    return bookings.some((booking) => {
-      const datePart = getInquiryDatePart(booking.inquiry_start_date)
-      if (!datePart) return false
-      return datePart >= from && datePart <= to
-    })
-  })
+  return allLeads.filter((lead) => getMatchingBookings(lead, from, to).length > 0)
 }
 
 function BookingCard({ booking }: { booking: Booking }) {
@@ -225,7 +242,7 @@ export function DailyReportPage() {
     const headers = ['S.No.', 'Name', 'Country', 'Ph. Number', 'Time', 'Status', 'Stage', 'Type', 'Value', 'Remarks']
     const rows = leads.map((lead, idx) => {
       const country = getCountryFromPhone(lead.phone)
-      const time = formatTimeUae(lead.created_at)
+      const time = getLeadInquiryTimes(lead, dateFrom, dateTo)
       const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || ''
       const value = lead.lead_value ? `AED ${Number(lead.lead_value).toLocaleString()}` : ''
       const remarks = (lead.lead_notes_report || '').replace(/"/g, '""')
@@ -399,6 +416,7 @@ export function DailyReportPage() {
                   const value = lead.lead_value
                     ? `AED ${Number(lead.lead_value).toLocaleString()}`
                     : '—'
+                  const inquiryTime = getLeadInquiryTimes(lead, dateFrom, dateTo)
 
                   const mainRow = (
                     <tr key={rowId} className="border-b border-neutral-100 transition hover:bg-neutral-50">
@@ -410,7 +428,7 @@ export function DailyReportPage() {
                       <td className="px-4 py-3 text-sm font-semibold text-neutral-900">
                         {lead.phone || '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm">{formatTimeUae(lead.created_at)}</td>
+                      <td className="px-4 py-3 text-sm">{inquiryTime}</td>
                       <td className="px-4 py-3 text-center text-xl">{lead.lead_icon || '—'}</td>
                       <td className="px-4 py-3 text-sm">
                         {lead.lead_stage ? (
