@@ -84,16 +84,29 @@ export function getInquiryDatePart(dateStr?: string | null): string | null {
 }
 
 /**
- * Format booking inquiry_start_date (UAE wall-clock, e.g. "2026-08-05T00:57")
- * as 12-hour time. No timezone conversion — value is already Dubai local.
+ * Format booking inquiry_start_date (e.g. "2026-08-05T00:57") as Dubai 12-hour time.
+ * Values without a timezone are treated as UTC, then converted to Asia/Dubai.
  */
 export function formatInquiryStartTime(dateStr?: string | null): string {
   if (!dateStr) return '—'
-  const match = dateStr.match(/T(\d{2}):(\d{2})/)
-  if (!match) return '—'
-  let hour = Number(match[1])
-  const minute = match[2]
-  const ampm = hour >= 12 ? 'PM' : 'AM'
-  hour = hour % 12 || 12
-  return `${hour}:${minute} ${ampm}`
+
+  let normalized = dateStr.trim()
+  // "2026-08-05T00:57" → "2026-08-05T00:57:00"
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) {
+    normalized = `${normalized}:00`
+  }
+  // No offset / Z → treat as UTC so we can convert to Dubai
+  if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(normalized)) {
+    normalized = `${normalized}Z`
+  }
+
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return '—'
+
+  return date.toLocaleTimeString('en-US', {
+    timeZone: DUBAI_TZ,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
 }
