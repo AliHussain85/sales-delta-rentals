@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import flatpickr from 'flatpickr'
-import html2canvas from 'html2canvas'
+import html2canvas from 'html2canvas-pro'
 import { Download, Filter, Image as ImageIcon, Loader2 } from 'lucide-react'
 import 'flatpickr/dist/flatpickr.min.css'
 import { supabaseData } from '../lib/supabase'
@@ -280,6 +280,9 @@ export function DailyReportPage() {
         ? `delta-rentals-report-${dateFrom}.png`
         : `delta-rentals-report-${dateFrom}_to_${dateTo}.png`
 
+    // Let React hide the action bar before capturing
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)))
+
     try {
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: '#f5f5f5',
@@ -291,7 +294,8 @@ export function DailyReportPage() {
       anchor.href = canvas.toDataURL('image/png')
       anchor.download = filename
       anchor.click()
-    } catch {
+    } catch (err) {
+      console.error('Screenshot error:', err)
       alert('Failed to capture image.')
     } finally {
       setCapturing(false)
