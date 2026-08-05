@@ -57,7 +57,12 @@ export const COUNTRY_PREFIXES = [
 
 export function getCountryFromPhone(phone?: string | null): string {
   if (!phone) return 'Unknown'
-  const clean = phone.replace(/[^0-9]/g, '')
+
+  // Keep digits only, then strip international dial prefixes (00 / 011)
+  let clean = phone.replace(/[^0-9]/g, '')
+  if (clean.startsWith('00')) clean = clean.slice(2)
+  else if (clean.startsWith('011')) clean = clean.slice(3)
+
   for (const entry of COUNTRY_PREFIXES) {
     if (clean.startsWith(entry.prefix)) return entry.country
   }
